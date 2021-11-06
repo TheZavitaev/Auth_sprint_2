@@ -10,12 +10,12 @@
 
 Информация по OAuth у разных поставщиков данных: 
 
-- [Twitter](https://developer.twitter.com/en/docs/authentication/overview){target="_blank"},
-- [Facebook](https://developers.facebook.com/docs/facebook-login/){target="_blank"},
-- [VK](https://vk.com/dev/access_token){target="_blank"},
-- [Google](https://developers.google.com/identity/protocols/oauth2){target="_blank"},
-- [Yandex](https://yandex.ru/dev/oauth/?turbo=true){target="_blank"},
-- [Mail](https://api.mail.ru/docs/guides/oauth/){target="_blank"}.
+- [Twitter](https://developer.twitter.com/en/docs/authentication/overview),
+- [Facebook](https://developers.facebook.com/docs/facebook-login/),
+- [VK](https://vk.com/dev/access_token),
+- [Google](https://developers.google.com/identity/protocols/oauth2),
+- [Yandex](https://yandex.ru/dev/oauth/?turbo=true),
+- [Mail](https://api.mail.ru/docs/guides/oauth/).
 
 ## Дополнительное задание
 
