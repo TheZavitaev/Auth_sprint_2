@@ -1,0 +1,38 @@
+.DS_Store
+
+*.pyc
+*.pyo
+
+.flaskenv
+env/
+venv/
+.venv/
+*.env
+
+dist/
+build/
+*.egg
+*.egg-info/
+_mailinglist
+.tox/
+.cache/
+.pytest_cache/
+
+# IDEA
+.idea/
+docs/_build/
+.vscode
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+*,cover
+
+# Personal files
+/src/sandbox.py
+
+/redis.conf/
+/redis-data/
+
+*.log
