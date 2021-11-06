@@ -1,0 +1,4 @@
+[tool.isort]
+profile = 'hug'
+src_paths = ['isort', 'src']
+line_length = 120

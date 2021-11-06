@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  auth_api:
+    build: .
+    image: auth_api
+    restart: always
+    depends_on:
+      - db
+      - redis
+    ports:
+      - 5000:5000
+
+  redis:
+    restart: unless-stopped
+    container_name: redis_auth
+    ports:
+      - 6379:6379
+    image: redis:6.2
+    volumes:
+      - $PWD/redis-data:/var/lib/redis
+      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+
+  db:
+    image: postgres:14
+    container_name: postgres_auth
+    ports:
+      - 5432:5432
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - pg_data:/var/lib/postgresql/data/pgdata
+
+volumes:
+  pg_data:
