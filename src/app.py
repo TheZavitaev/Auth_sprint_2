@@ -1,6 +1,7 @@
 import logging
 
 import click
+from authlib.integrations.flask_client import OAuth
 from flask import Flask, jsonify
 from flask.cli import with_appcontext
 from flask_jwt_extended import JWTManager
@@ -33,9 +34,24 @@ def create_app():
     create_command(app)
     create_swagger(app)
 
+    oauth = OAuth(app)
+    init_oauth(oauth, app)
+
     app.register_blueprint(api.routes)
 
     return app
+
+
+def init_oauth(oauth: OAuth, flask_app: Flask) -> None:
+    oauth.register(
+        'google',
+        client_id=flask_app.config['GOOGLE_CLIENT_ID'],
+        client_secret=flask_app.config['GOOGLE_CLIENT_SECRET'],
+        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+        client_kwargs={'scope': 'openid profile email'},
+    )
+
+    return None
 
 
 def init_storage(flask_app: Flask) -> None:

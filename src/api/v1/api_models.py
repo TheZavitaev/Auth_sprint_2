@@ -64,9 +64,7 @@ class TokenGrantOut(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = 'bearer'
-    expires: int = Field(
-        default_factory=lambda: current_app.config["JWT_ACCESS_TOKEN_EXPIRES"]
-    )
+    expires: int = Field(default_factory=lambda: current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])
 
 
 class TokenInPassword(BaseModel):

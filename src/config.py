@@ -51,6 +51,9 @@ class Settings(BaseSettings):
     JWT_PRIVATE_KEY: str = os.getenv('JWT_PRIVATE_KEY')
     JWT_PUBLIC_KEY: str = os.getenv('JWT_PUBLIC_KEY')
 
+    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_SECRET: str
+
 
 flask_config = Settings()
 jwt_config = TokenConfig()

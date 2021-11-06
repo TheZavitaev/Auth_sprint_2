@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, UniqueConstraint
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, UniqueConstraint, JSON
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 
@@ -42,19 +42,19 @@ class User(db.Model):
     should_change_password = Column(Boolean, default=False)
 
     @classmethod
-    def from_credentials(cls, email, hashed_password) -> 'User':
+    def from_credentials(cls, email: str, hashed_password: str) -> 'User':
         return cls(email=email, hashed_password=hashed_password)
 
     @classmethod
-    def get_by_id(cls, user_id) -> Optional['User']:
+    def get_by_id(cls, user_id: UUID) -> Optional['User']:
         return db.session.query(cls).filter_by(id=user_id).one_or_none()
 
     @classmethod
-    def get_user_universal(
-            cls,
-            email: Optional[str] = None,
-    ) -> Optional['User']:
-        user = db.session.query(cls).filter(cls.email == email).one_or_none()
+    def get_user_universal(cls, email: str | None = None, third_party_id: str | None = None) -> Optional['User']:
+        user = db.session.query(cls).join(cls.third_party_accounts, full=True).filter(
+            (cls.email == email) | (ThirdPartyAccount.id == third_party_id)
+        ).one_or_none()
+
         return user
 
     @property
@@ -134,3 +134,16 @@ class LoginRecord(db.Model):
             timestamp=self.timestamp,
             ip=self.ip,
         )
+
+
+class ThirdPartyAccount(db.Model):
+    __tablename__ = 'third_party_accounts'
+
+    id = Column(String, primary_key=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'))
+    user = relationship('User', backref=backref('third_party_accounts', cascade='all, delete-orphan'))
+    third_party_name = Column(String)
+    user_info = Column(JSON)
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}: {self.id} [user_id: {self.user.id}]'

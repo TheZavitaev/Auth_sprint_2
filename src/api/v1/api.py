@@ -3,7 +3,7 @@ import logging
 
 from flask import Blueprint, jsonify, make_response, request, url_for
 from flask_jwt_extended import current_user, get_jwt, jwt_required
-from werkzeug.exceptions import Forbidden
+from werkzeug.exceptions import Forbidden, BadRequest
 
 import auth
 from api.v1.api_models import (
@@ -15,9 +15,9 @@ from api.v1.api_models import (
     UserLoginRecordsOut,
     UserPatchIn,
 )
-from api.v1.utils import parse_obj_raise
+from api.v1.utils import parse_obj_raise, get_oauth
 from db import db
-from db_models import LoginRecord
+from db_models import LoginRecord, ThirdPartyAccount, User
 
 routes = Blueprint('v1', __name__, url_prefix='/api/v1')
 
@@ -63,6 +63,7 @@ def create_user():
     user = auth.create_user(user_data.email, user_data.password.get_secret_value())
     resp = make_response('Created', http.HTTPStatus.CREATED)
     resp.headers['Location'] = f'{url_for(".create_user")}/{user.id}'
+
     return resp
 
 
@@ -201,6 +202,7 @@ def get_login_history(user_id):
 
     records = db.session.query(LoginRecord).all()
     login_records = [record.to_api_model() for record in records]
+
     return jsonify(
         UserLoginRecordsOut(logins=login_records).dict()
     )
@@ -301,6 +303,7 @@ def update_token_pair():
 
     token_data = get_jwt()
     access_token, refresh_token = auth.refresh_tokens(current_user, token_data)
+
     return jsonify(
         TokenGrantOut(access_token=access_token, refresh_token=refresh_token).dict()
     )
@@ -404,6 +407,7 @@ def add_role_to_user(role_name: str, user_id: str):
     """
 
     auth.add_role_to_user(role_name, user_id)
+
     return 'OK', http.HTTPStatus.OK
 
 
@@ -510,3 +514,112 @@ def remove_permission_from_role(role_name: str, permission_name: str):
 
     auth.remove_permission_from_role(role_name, permission_name)
     return 'OK', http.HTTPStatus.OK
+
+
+@routes.route('/oauth_login', methods=['GET'])
+def oauth_login():
+    """Logging in with OpenID provider
+    ---
+    get:
+      description: Logging in with OpenID provider
+      summary: Logging in with openid provider
+      parameters:
+        - name: provider
+          in: query
+          description: OIDC provider name
+          schema:
+            type: string
+            enum: [google]
+      responses:
+        200:
+          description: OK
+      tags:
+        - openid
+    """
+
+    provider_name = request.args['provider']
+
+    if not provider_name:
+        raise BadRequest('No provider is filled')
+
+    oauth = get_oauth()
+
+    try:
+        oauth_provider = getattr(oauth, provider_name)
+
+    except AttributeError:
+        raise BadRequest(description='Unknown OpenID Connect (OIDC) provider name')
+
+    redirect_uri = url_for('.oauth_redirect', provider=provider_name, _external=True)
+
+    return oauth_provider.authorize_redirect(redirect_uri=redirect_uri)
+
+
+@routes.route('/oauth_redirect', methods=['GET'])
+def oauth_redirect():
+    """Redirect URL for openid
+    ---
+    get:
+      description: Redirect URL for openid
+      summary: Redirect URL for openid. If user exists - returns token pair, if user is new — creates user.
+      parameters:
+        - name: provider
+          in: query
+          description: OIDC provider name
+          schema:
+            type: string
+            enum: [google]
+      responses:
+        200:
+          description: Return new tokens
+          content:
+            application/json:
+              schema: TokenGrantOut
+        201:
+          description: Ok
+          headers:
+            Location:
+              description: uri with user info
+              schema:
+                type: string
+                format: uri
+                example: /user/dbdbed6b-95d1-4a4f-b7b9-6a6f78b6726e
+          content:
+            application/json:
+              schema: UserInfoOut
+        409:
+          description: Conflict
+      tags:
+        - openid
+    """
+
+    provider_name = request.args['provider']
+    oauth = get_oauth()
+
+    try:
+        oauth_provider = getattr(oauth, provider_name)
+
+    except AttributeError:
+        raise BadRequest(description='Unknown OpenID Connect (OIDC) provider name')
+
+    token = oauth_provider.authorize_access_token()
+    user_info = oauth_provider.parse_id_token(token)
+
+    third_party_id = user_info['sub']
+
+    user = User.get_user_universal(third_party_id=third_party_id)
+
+    if user:
+        access_token, refresh_token = auth.issue_tokens(user, request.user_agent, request.remote_addr)
+
+        return jsonify(
+            TokenGrantOut(access_token=access_token, refresh_token=refresh_token).dict()
+        )
+
+    else:
+        user = auth.create_user_from_third_party(third_party_account_id=third_party_id, user_info=user_info)
+
+        resp = make_response('Created', http.HTTPStatus.CREATED)
+        resp.headers['Location'] = f'{url_for(".get_user_info", user_id=user.id)}'
+
+        return resp

@@ -10,8 +10,9 @@ from werkzeug.user_agent import UserAgent
 import permissions
 import token_store
 from api.v1.api_models import RoleIn, RoleOut
+from api.v1.utils import generate_random_password
 from db import db
-from db_models import LoginRecord, Role, User
+from db_models import LoginRecord, Role, User, ThirdPartyAccount
 from exceptions import AlreadyExistsError, PasswordAuthenticationError, TokenError
 
 logger = logging.getLogger(__name__)
@@ -212,3 +213,24 @@ def remove_permission_from_role(role_name, permission_name):
     role.permissions.remove(permission_name)
     db.session.add(role)
     db.session.commit()
+
+
+def create_user_from_third_party(third_party_account_id: str, user_info: dict) -> User:
+    hashed_pass = hash_password(generate_random_password())
+    email = user_info['email'] if user_info['email_verified'] else None
+
+    if email:
+        user_exists = User.get_user_universal(email) is not None
+        if user_exists:
+            raise AlreadyExistsError(f'User with email: {email} already exists')
+
+    account = ThirdPartyAccount(id=third_party_account_id, third_party_name=user_info['iss'], user_info=user_info,)
+    user = User(email=email, hashed_password=hashed_pass, should_change_password=True, third_party_accounts=[account],)
+
+    try:
+        db.session.add(user)
+        db.session.commit()
+    except OperationalError as ex:
+        logger.error(f'DB error occurred while trying to save OIDC data - {ex}: {user=}')
+
+    return user
