@@ -5,6 +5,7 @@ from authlib.integrations.flask_client import OAuth
 from flask import current_app
 from passlib import pwd
 from pydantic import ValidationError
+from werkzeug.exceptions import BadRequest
 
 from exceptions import RequestValidationError
 
@@ -26,3 +27,20 @@ def get_oauth() -> OAuth:
 
 def generate_random_password(length=12) -> str:
     return pwd.genword(length=length)
+
+
+def check_oidc_provider(request):
+    provider_name = request.args['provider']
+
+    if not provider_name:
+        raise BadRequest('No provider is filled')
+
+    oauth = get_oauth()
+
+    try:
+        oauth_provider = getattr(oauth, provider_name)
+
+    except AttributeError:
+        raise BadRequest(description='Unknown OpenID Connect (OIDC) provider name')
+
+    return oauth_provider, provider_name

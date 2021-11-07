@@ -3,7 +3,7 @@ import logging
 
 from flask import Blueprint, jsonify, make_response, request, url_for
 from flask_jwt_extended import current_user, get_jwt, jwt_required
-from werkzeug.exceptions import BadRequest, Forbidden
+from werkzeug.exceptions import Forbidden
 
 import auth
 from api.v1.api_models import (
@@ -15,9 +15,9 @@ from api.v1.api_models import (
     UserLoginRecordsOut,
     UserPatchIn,
 )
-from api.v1.utils import get_oauth, parse_obj_raise
+from api.v1.utils import parse_obj_raise, check_oidc_provider
 from db import db
-from db_models import LoginRecord, ThirdPartyAccount, User
+from db_models import LoginRecord, User
 
 routes = Blueprint('v1', __name__, url_prefix='/api/v1')
 
@@ -537,18 +537,7 @@ def oauth_login():
         - openid
     """
 
-    provider_name = request.args['provider']
-
-    if not provider_name:
-        raise BadRequest('No provider is filled')
-
-    oauth = get_oauth()
-
-    try:
-        oauth_provider = getattr(oauth, provider_name)
-
-    except AttributeError:
-        raise BadRequest(description='Unknown OpenID Connect (OIDC) provider name')
+    oauth_provider, provider_name = check_oidc_provider(request)
 
     redirect_uri = url_for('.oauth_redirect', provider=provider_name, _external=True)
 
@@ -593,14 +582,7 @@ def oauth_redirect():
         - openid
     """
 
-    provider_name = request.args['provider']
-    oauth = get_oauth()
-
-    try:
-        oauth_provider = getattr(oauth, provider_name)
-
-    except AttributeError:
-        raise BadRequest(description='Unknown OpenID Connect (OIDC) provider name')
+    oauth_provider, provider_name = check_oidc_provider(request)
 
     token = oauth_provider.authorize_access_token()
     user_info = oauth_provider.parse_id_token(token)
