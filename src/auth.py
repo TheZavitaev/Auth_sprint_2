@@ -219,10 +219,8 @@ def create_user_from_third_party(third_party_account_id: str, user_info: dict) -
     hashed_pass = hash_password(generate_random_password())
     email = user_info['email'] if user_info['email_verified'] else None
 
-    if email:
-        user_exists = User.get_user_universal(email) is not None
-        if user_exists:
-            raise AlreadyExistsError(f'User with email: {email} already exists')
+    if email and User.get_user_universal(email) is not None:
+        raise AlreadyExistsError(f'User with email: {email} already exists')
 
     account = ThirdPartyAccount(id=third_party_account_id, third_party_name=user_info['iss'], user_info=user_info,)
     user = User(email=email, hashed_password=hashed_pass, should_change_password=True, third_party_accounts=[account],)
