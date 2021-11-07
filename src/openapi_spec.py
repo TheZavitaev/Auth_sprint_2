@@ -52,6 +52,6 @@ def get_api_spec():
     spec.components.schema('TokenRevokeIn', TokenRevokeIn.schema())
     spec.components.schema('TokenGrantOut', TokenGrantOut.schema())
     spec.components.schema("RoleIn", RoleIn.schema())
-    spec.components.schema("RoleOut", RoleOut.schema())
+    spec.components.schema('RoleOut', RoleOut.schema())
 
     return spec

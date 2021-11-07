@@ -1,5 +1,6 @@
 apispec==5.1.1
 apispec-webframeworks==0.5.2
+Authlib==0.15.5
 blinker==1.4
 certifi==2021.10.8
 cffi==1.15.0
