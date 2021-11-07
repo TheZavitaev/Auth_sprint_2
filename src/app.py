@@ -38,7 +38,7 @@ def create_app():
     oauth = OAuth(app)
     init_oauth(oauth, app)
 
-    prepare_request()
+    prepare_request(app)
     setup_jaeger(app)
 
     app.register_blueprint(api.routes)
@@ -52,8 +52,8 @@ def setup_jaeger(flask_app: Flask) -> None:
     return None
 
 
-def prepare_request():
-    @app.before_request
+def prepare_request(flask_api: Flask):
+    @flask_api.before_request
     def before_request():
         request_id = request.headers.get('X-Request-Id')
         if not request_id:

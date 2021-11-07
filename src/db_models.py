@@ -10,6 +10,19 @@ from api.v1.api_models import UserLoginRecord
 from db import db
 
 
+def create_partition(target, connection, **kw) -> None:
+    """ creating partition by user_sign_in """
+    connection.execute(
+        """CREATE TABLE IF NOT EXISTS "user_sign_in_smart" PARTITION OF "login_entries" FOR VALUES IN ('smart')"""
+    )
+    connection.execute(
+        """CREATE TABLE IF NOT EXISTS "user_sign_in_mobile" PARTITION OF "login_entries" FOR VALUES IN ('mobile')"""
+    )
+    connection.execute(
+        """CREATE TABLE IF NOT EXISTS "user_sign_in_web" PARTITION OF "login_entries" FOR VALUES IN ('web')"""
+    )
+
+
 class User(db.Model):
     __tablename__ = 'users'
     __table_args__ = {'extend_existing': True}
@@ -103,7 +116,16 @@ class RolesUsers(db.Model):
 
 class LoginRecord(db.Model):
     __tablename__ = 'login_entries'
-    __table_args__ = {'extend_existing': True}
+    __table_args__ = (
+        UniqueConstraint('id', 'platform'),
+        {
+            'postgresql_partition_by': 'LIST (platform)',
+            'listeners': [('after_create', create_partition)],
+        },
+        {
+            'extend_existing': True
+        }
+    )
 
     id = Column(
         UUID(as_uuid=True),
@@ -114,7 +136,7 @@ class LoginRecord(db.Model):
     )
     user_id = Column('user_id', UUID(as_uuid=True), ForeignKey('users.id'))
     user_agent = Column(String)
-    platform = Column(String(100))
+    platform = Column(String(100), primary_key=True)
     browser = Column(String(255))
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
     ip = Column(String(100))
