@@ -54,6 +54,10 @@ class User(db.Model):
 
     should_change_password = Column(Boolean, default=False)
 
+    totp_secret = db.Column(db.String, nullable=True)
+    is_active_2fa = db.Column(db.Boolean, default=False)
+    is_verified = db.Column(db.Boolean, default=False)
+
     @classmethod
     def from_credentials(cls, email: str, hashed_password: str) -> 'User':
         return cls(email=email, hashed_password=hashed_password)
@@ -76,6 +80,18 @@ class User(db.Model):
         for role in self.roles:
             permissions_set.update(role.permissions)
         return list(permissions_set)
+
+    def activate_2fa(self):
+        self.is_active_2fa = True
+        self.save()
+
+    def deactivate_2fa(self):
+        self.is_active_2fa = False
+        self.save()
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
 
     def __repr__(self):
         return f'<User {self.email}, active: {self.active}, registered_at: {self.registered_at.date().isoformat()}>'

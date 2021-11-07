@@ -6,3 +6,4 @@ from . import routes_role  # noqa
 from . import routes_user  # noqa
 from . import routes_token  # noqa
 from . import routes_oauth  # noqa
+from . import routes_2fa  # noqa

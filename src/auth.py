@@ -1,6 +1,7 @@
 import logging
 from functools import wraps
 
+from flask import request
 from flask_jwt_extended import create_access_token, create_refresh_token, current_user, decode_token
 from passlib.hash import argon2
 from psycopg2 import OperationalError
@@ -71,7 +72,11 @@ def authenticate_with_email(email: str, password: str) -> User:
     return user
 
 
-def issue_tokens(user: User, user_agent: UserAgent, ip: str) -> tuple[str, str]:
+def issue_tokens(user: User, user_agent: UserAgent = None, ip: str = None) -> tuple[str, str]:
+    if user_agent is None and ip is None:
+        user_agent = request.user_agent.string
+        ip = request.remote_addr
+
     device_id = token_store.user_agent_to_device_id(user_agent)
     access_token = create_access_token(user, additional_claims={'device': device_id})
     refresh_token = create_refresh_token(user, additional_claims={'device': device_id})
@@ -81,8 +86,10 @@ def issue_tokens(user: User, user_agent: UserAgent, ip: str) -> tuple[str, str]:
     )
 
     browser_string = user_agent.browser
+
     if user_agent.version:
         browser_string = f'{browser_string}-{user_agent.version}'
+
     record = LoginRecord(
         user_id=user.id,
         ip=ip,
