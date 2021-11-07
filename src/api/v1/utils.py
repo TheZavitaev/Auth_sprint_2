@@ -1,11 +1,10 @@
 from typing import Type, TypeVar
 
 import pydantic
+from authlib.integrations.flask_client import OAuth
 from flask import current_app
 from passlib import pwd
 from pydantic import ValidationError
-from authlib.integrations.flask_client import OAuth
-
 
 from exceptions import RequestValidationError
 

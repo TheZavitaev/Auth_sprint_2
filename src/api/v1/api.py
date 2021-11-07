@@ -3,7 +3,7 @@ import logging
 
 from flask import Blueprint, jsonify, make_response, request, url_for
 from flask_jwt_extended import current_user, get_jwt, jwt_required
-from werkzeug.exceptions import Forbidden, BadRequest
+from werkzeug.exceptions import BadRequest, Forbidden
 
 import auth
 from api.v1.api_models import (
@@ -15,7 +15,7 @@ from api.v1.api_models import (
     UserLoginRecordsOut,
     UserPatchIn,
 )
-from api.v1.utils import parse_obj_raise, get_oauth
+from api.v1.utils import get_oauth, parse_obj_raise
 from db import db
 from db_models import LoginRecord, ThirdPartyAccount, User
 

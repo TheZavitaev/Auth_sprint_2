@@ -2,8 +2,8 @@ import functools
 import os
 
 import jaeger_client
-from jaeger_client import Config
 from flask_opentracing import FlaskTracer
+from jaeger_client import Config
 
 
 def _setup_jaeger():

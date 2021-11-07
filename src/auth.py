@@ -12,7 +12,7 @@ import token_store
 from api.v1.api_models import RoleIn, RoleOut
 from api.v1.utils import generate_random_password
 from db import db
-from db_models import LoginRecord, Role, User, ThirdPartyAccount
+from db_models import LoginRecord, Role, ThirdPartyAccount, User
 from exceptions import AlreadyExistsError, PasswordAuthenticationError, TokenError
 
 logger = logging.getLogger(__name__)
