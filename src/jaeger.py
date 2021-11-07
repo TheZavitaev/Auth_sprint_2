@@ -14,6 +14,7 @@ def _setup_jaeger():
                 'param': 1
             },
             'local_agent': {
+                'enabled': os.getenv('JAEGER_TRACING', False),
                 'reporting_port': os.environ.get(
                     'JAEGER_AGENT_PORT', jaeger_client.config.DEFAULT_REPORTING_PORT
                 ),
