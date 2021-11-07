@@ -32,3 +32,10 @@
 make run  # поднимаем контейнеры
 ```
 Документация Swagger размещена по адресу: http://0.0.0.0:5000/swagger/
+
+* Репозиторий с АПИ фильмов (скопировал командный):
+[тык](https://github.com/TheZavitaev/Async_API_sprint_2)
+
+* Реализация бэкенда аутентификации:
+[тык](https://github.com/TheZavitaev/Async_API_sprint_2/blob/main/backend_api/main.py#L24)
+

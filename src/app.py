@@ -2,9 +2,10 @@ import logging
 
 import click
 from authlib.integrations.flask_client import OAuth
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask.cli import with_appcontext
 from flask_jwt_extended import JWTManager
+from flask_opentracing import FlaskTracer
 from flask_swagger_ui import get_swaggerui_blueprint
 
 import auth
@@ -37,10 +38,28 @@ def create_app():
     oauth = OAuth(app)
     init_oauth(oauth, app)
 
+    prepare_request()
+    setup_jaeger(app)
+
     app.register_blueprint(api.routes)
 
     return app
 
+
+def setup_jaeger(flask_app: Flask) -> None:
+    import jaeger
+    jaeger.tracer = FlaskTracer(jaeger._setup_jaeger, app=flask_app)
+    return None
+
+
+def prepare_request():
+    @app.before_request
+    def before_request():
+        request_id = request.headers.get('X-Request-Id')
+        if not request_id:
+            raise RuntimeError('request id is requred')
+
+        return None
 
 def init_oauth(oauth: OAuth, flask_app: Flask) -> None:
     oauth.register(
