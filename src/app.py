@@ -61,6 +61,7 @@ def prepare_request(flask_api: Flask):
 
         return None
 
+
 def init_oauth(oauth: OAuth, flask_app: Flask) -> None:
     oauth.register(
         'google',
