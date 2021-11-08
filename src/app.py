@@ -113,15 +113,15 @@ def create_swagger(flask_app: Flask) -> None:
 
         return jsonify(get_api_spec().to_dict())
 
-    SWAGGER_URL = '/swagger'
-    API_URL = '/static/swagger.json'
-    SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
-        SWAGGER_URL,
-        API_URL,
+    swagger_url = '/swagger'
+    api_url = '/static/swagger.json'
+    swaggerui_blueprint = get_swaggerui_blueprint(
+        swagger_url,
+        api_url,
         config={'app_name': 'Auth API'}
     )
 
-    flask_app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
+    flask_app.register_blueprint(swaggerui_blueprint, url_prefix=swagger_url)
 
     return None
 
