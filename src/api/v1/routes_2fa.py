@@ -3,6 +3,8 @@ from uuid import UUID
 
 import pyotp
 from flask import jsonify
+from flask_jwt_extended import jwt_required, current_user
+from werkzeug.exceptions import Forbidden
 
 from api.v1.api import routes
 from auth import issue_tokens
@@ -10,6 +12,7 @@ from db_models import User
 
 
 @routes.route('/sync/<string:user_id>', methods=['GET'])
+@jwt_required()
 def generate_secrete_key(user_id: UUID):
     """2 FA generate secrete key
      ---
@@ -35,6 +38,10 @@ def generate_secrete_key(user_id: UUID):
 
     secret = pyotp.random_base32()
     user = User.get_by_id(user_id)
+
+    if str(current_user.id) != user_id:
+        raise Forbidden
+
     user.totp_secret = secret
     user.save()
     totp = pyotp.TOTP(secret)
@@ -44,6 +51,7 @@ def generate_secrete_key(user_id: UUID):
 
 
 @routes.route('/sync/<string:user_id>', methods=['POST'])
+@jwt_required()
 def sync(data, user_id: UUID):
     """2 FA sync
      ---
@@ -69,6 +77,8 @@ def sync(data, user_id: UUID):
 
     user = User.get_by_id(user_id)
     secret = user.totp_secret
+    if str(current_user.id) != user_id:
+        raise Forbidden
     totp = pyotp.TOTP(secret)
 
     code = data.pop('code')
