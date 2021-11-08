@@ -6,7 +6,7 @@ from flask_jwt_extended import current_user, jwt_required
 from werkzeug.exceptions import Forbidden
 
 import auth
-from api.v1.api import routes
+from api.v1.api import limiter, routes
 from api.v1.api_models import UserIn, UserInfoOut, UserLoginRecordsOut, UserPatchIn
 from api.v1.utils import parse_obj_raise
 from db import db
@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 @routes.route('/user', methods=['POST'])
+@limiter.limit('1 per day')
 def create_user():
     """create_user
         ---

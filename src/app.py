@@ -5,8 +5,6 @@ from authlib.integrations.flask_client import OAuth
 from flask import Flask, jsonify, request
 from flask.cli import with_appcontext
 from flask_jwt_extended import JWTManager
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 from flask_opentracing import FlaskTracer
 from flask_swagger_ui import get_swaggerui_blueprint
 
@@ -14,6 +12,7 @@ import auth
 import config
 import token_store
 from api.v1 import api
+from api.v1.api import limiter
 from db import db, init_db
 from db_models import User
 
@@ -27,10 +26,6 @@ def create_app():
         level=app.config['LOG_LEVEL'],
     )
 
-    limiter = Limiter(
-        key_func=get_remote_address,
-        default_limits=['10 per day', '5 per hour']
-    )
     limiter.init_app(app)
 
     jwt = JWTManager()

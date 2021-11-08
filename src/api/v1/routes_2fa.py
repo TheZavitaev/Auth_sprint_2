@@ -3,16 +3,17 @@ from uuid import UUID
 
 import pyotp
 from flask import jsonify
-from flask_jwt_extended import jwt_required, current_user
+from flask_jwt_extended import current_user, jwt_required
 from werkzeug.exceptions import Forbidden
 
-from api.v1.api import routes
+from api.v1.api import limiter, routes
 from auth import issue_tokens
 from db_models import User
 
 
 @routes.route('/sync/<string:user_id>', methods=['GET'])
 @jwt_required()
+@limiter.limit('5 per hour')
 def generate_secrete_key(user_id: UUID):
     """2 FA generate secrete key
      ---

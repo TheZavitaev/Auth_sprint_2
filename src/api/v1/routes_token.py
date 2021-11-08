@@ -5,7 +5,7 @@ from flask import jsonify, request
 from flask_jwt_extended import current_user, get_jwt, jwt_required
 
 import auth
-from api.v1.api import routes
+from api.v1.api import limiter, routes
 from api.v1.api_models import TokenGrantOut, TokenInPassword
 from api.v1.utils import parse_obj_raise
 
@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 @routes.route('/create_token', methods=['POST'])
+@limiter.limit('1 per hour')
 def create_token_pair():
     """create_token_pair
     ---
@@ -48,6 +49,7 @@ def create_token_pair():
 
 @routes.route('/delete_token', methods=['DELETE'])
 @jwt_required()
+@limiter.limit('5 per hour')
 def revoke_refresh_token():
     """revoke_refresh_token
     ---
@@ -83,6 +85,7 @@ def revoke_refresh_token():
 
 @routes.route('/refresh_token', methods=['POST'])
 @jwt_required(refresh=True)
+@limiter.limit('5 per hour')
 def update_token_pair():
     """update_token_pair
     ---

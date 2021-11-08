@@ -3,13 +3,14 @@ import http
 from flask import jsonify, make_response, request, url_for
 
 import auth
-from api.v1.api import routes
+from api.v1.api import limiter, routes
 from api.v1.api_models import TokenGrantOut
 from api.v1.utils import check_oidc_provider
 from db_models import User
 
 
 @routes.route('/oauth_login', methods=['GET'])
+@limiter.limit('5 per hour')
 def oauth_login():
     """Logging in with OpenID provider
     ---
