@@ -41,6 +41,7 @@ class Settings(BaseSettings):
     REDIS_PORT = REDIS_PORT
 
     REDIS_SOCKET: str = f'{REDIS_HOST:{REDIS_PORT}}'
+    REDIS_URI: str = f'redis://{REDIS_SOCKET}'
 
     SQLALCHEMY_DATABASE_URI: str = f'postgresql://{DB_USER}@{DB_HOST}:5432/auth'
     SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
