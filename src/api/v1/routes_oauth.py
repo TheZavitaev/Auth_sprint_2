@@ -1,6 +1,6 @@
 import http
 
-from flask import request, jsonify, make_response, url_for
+from flask import jsonify, make_response, request, url_for
 
 import auth
 from api.v1.api import routes

@@ -1,17 +1,16 @@
 import http
 import logging
 
-from flask import jsonify, request, make_response, url_for
+from flask import jsonify, make_response, request, url_for
 from flask_jwt_extended import current_user, jwt_required
 from werkzeug.exceptions import Forbidden
 
 import auth
 from api.v1.api import routes
-from api.v1.api_models import UserLoginRecordsOut, UserIn, UserInfoOut, UserPatchIn
+from api.v1.api_models import UserIn, UserInfoOut, UserLoginRecordsOut, UserPatchIn
 from api.v1.utils import parse_obj_raise
 from db import db
 from db_models import LoginRecord
-
 
 logger = logging.getLogger(__name__)
 

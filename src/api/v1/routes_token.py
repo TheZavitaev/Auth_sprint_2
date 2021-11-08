@@ -9,7 +9,6 @@ from api.v1.api import routes
 from api.v1.api_models import TokenGrantOut, TokenInPassword
 from api.v1.utils import parse_obj_raise
 
-
 logger = logging.getLogger(__name__)
 
 

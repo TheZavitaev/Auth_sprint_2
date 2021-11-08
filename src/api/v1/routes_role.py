@@ -8,7 +8,6 @@ import auth
 from api.v1.api import routes
 from api.v1.api_models import RoleIn
 
-
 logger = logging.getLogger(__name__)
 
 
